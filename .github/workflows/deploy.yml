@@ -15,36 +15,25 @@ permissions:
   id-token: write   # OIDC-токен для подтверждения деплоя
 
 jobs:
-  # ─────────────────────────────────────────────────────────────
-  # JOB 1. Линтинг HTML и CSS (проверка качества кода)
-  # ─────────────────────────────────────────────────────────────
-  lint:
+    lint:
     runs-on: ubuntu-latest
     steps:
-      # Шаг 1. Скопировать файлы репозитория на виртуальную машину
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # Шаг 2. Подготовить Node.js для запуска линтеров
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: '24'
 
-      # Шаг 3. Проверка HTML через HTMLHint
-      # Если в проекте есть .htmlhintrc — конфиг подхватится автоматически
-      - name: Lint HTML (HTMLHint)
-        run: |
-          npx --yes htmlhint "**/*.html" \
-            --ignore "node_modules/**,.github/**"
+      - name: Install linters
+        run: npm install --no-save htmlhint stylelint stylelint-config-standard
 
-      # Шаг 4. Проверка CSS через Stylelint
-      # Используется стандартный набор правил stylelint-config-standard
+      - name: Lint HTML (HTMLHint)
+        run: npx htmlhint "**/*.html" --ignore "node_modules/**,.github/**"
+
       - name: Lint CSS (Stylelint)
-        run: |
-          npx --yes stylelint "**/*.css" \
-            --ignore-pattern "node_modules/**" \
-            --config '{"extends":"stylelint-config-standard","rules":{"no-empty-source":null}}'
+        run: npx stylelint "**/*.css" --ignore-pattern "node_modules/**"
 
   # ─────────────────────────────────────────────────────────────
   # JOB 2. Деплой на GitHub Pages (запускается только после успешного lint)
